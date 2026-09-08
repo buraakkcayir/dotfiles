@@ -1,0 +1,77 @@
+[2bd93356-b3ea-49c0-a6fe-bc369379cad1]
+Description=org.kde.konsole window settings
+below=true
+belowrule=2
+noborder=true
+noborderrule=2
+skipswitcher=true
+skipswitcherrule=2
+skiptaskbar=true
+skiptaskbarrule=2
+title=DesktopWidgetTerm
+titlematch=1
+types=1
+wmclass=konsole org.kde.konsole
+wmclasscomplete=true
+
+[3e91d503-1274-4d63-a1c9-2219ef16f9d9]
+Description=Espanso Sync Tool window settings
+minimize=true
+minimizerule=2
+skiptaskbar=true
+skiptaskbarrule=2
+title=Espanso Sync Tool
+titlematch=1
+
+[6cb6fe14-0e00-40d5-89b2-ff0eb600fabc]
+Description=xfreerdp application settings
+clientmachine=localhost
+desktopfile=windows-desktop
+desktopfilerule=2
+wmclass=xfreerdp
+wmclassmatch=2
+
+[9c8b3685-9b98-451e-86f1-5e1f06d916db]
+Description=Microsoft Excel Rule
+clientmachine=localhost
+desktopfile=ms-excel
+desktopfilerule=2
+title=Excel
+titlematch=2
+wmclass=RAIL
+wmclassmatch=2
+
+[General]
+count=6
+rules=aae86c75-b3e3-42c1-bf1f-459799d92730,6cb6fe14-0e00-40d5-89b2-ff0eb600fabc,9c8b3685-9b98-451e-86f1-5e1f06d916db,ac6a0251-bd0b-42be-babc-d74528a23756,dc46fe0e-1291-4c82-af52-cd4851c12dc1,3e91d503-1274-4d63-a1c9-2219ef16f9d9
+
+[aae86c75-b3e3-42c1-bf1f-459799d92730]
+Description=hotkey.exe window settings
+clientmachine=localhost
+fullscreen=true
+fullscreenrule=3
+title=HotKey
+titlematch=2
+types=1
+wmclass=hotkey.exe
+wmclassmatch=1
+
+[ac6a0251-bd0b-42be-babc-d74528a23756]
+Description=Microsoft Powerpoint Rule
+clientmachine=localhost
+desktopfile=ms-powerpoint
+desktopfilerule=2
+title=Powerpoint
+titlematch=2
+wmclass=RAIL
+wmclassmatch=2
+
+[dc46fe0e-1291-4c82-af52-cd4851c12dc1]
+Description=Microsoft Word Rule
+clientmachine=localhost
+desktopfile=ms-word
+desktopfilerule=2
+title=Word
+titlematch=2
+wmclass=RAIL
+wmclassmatch=2
