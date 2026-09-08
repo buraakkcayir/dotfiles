@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Dikte
+Exec=/home/burak/AppImages/dikte.appimage
+X-GNOME-Autostart-enabled=true
+Icon=dikte
+StartupNotify=false
