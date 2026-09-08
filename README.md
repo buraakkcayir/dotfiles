@@ -18,6 +18,7 @@ A lightweight wrapper to force Java applications (like Minecraft) to run on the 
 - **Zsh:** Optimized `.zshrc` with `powerlevel10k` and custom aliases (including Cloudflare WARP and Docker RDP wrappers).
 - **KDE Plasma 6:** Global shortcuts (`kglobalshortcutsrc`), KWin window rules (`kwinrulesrc`), and custom autostart desktop entries.
 - **Konsole:** Main configuration (`konsolerc`), custom profiles, and `MaterialYou` color schemes.
+- **Ly TUI Display Manager:** Custom login screen configuration (`/etc/ly/config.ini`) featuring Nord/Tokyo Night aesthetics and sequential function keybinds.
 
 ## 🚀 Installation
 Clone the repository and automatically symlink the files to your home directory:
@@ -38,6 +39,10 @@ ln -sf ~/dotfiles/konsolerc ~/.config/konsolerc
 mkdir -p ~/.local/share/konsole ~/.config/autostart
 ln -sf ~/dotfiles/konsole/* ~/.local/share/konsole/
 ln -sf ~/dotfiles/autostart/* ~/.config/autostart/
+
+# 5. Symlink Ly Display Manager Config (Requires Root)
+sudo rm -f /etc/ly/config.ini
+sudo ln -s ~/dotfiles/etc/ly/config.ini /etc/ly/config.ini
 ```
 
 ## 📜 License
