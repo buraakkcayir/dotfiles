@@ -2,6 +2,14 @@
 
 A curated collection of my personal dotfiles, Zsh configurations, and custom automation scripts optimized for **KDE Plasma 6 (Wayland)** on **CachyOS**.
 
+## 🖼️ Preview
+
+<p align="center">
+  <img src="assets/ly-preview.png" alt="Ly TUI Display Manager Preview" width="850" />
+  <br>
+  <em>Ly TUI Display Manager — Custom Tokyo Night & Nord Setup</em>
+</p>
+
 ## 🛠️ Included Scripts
 
 ### 1. `audit-system.sh`
