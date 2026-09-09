@@ -18,9 +18,6 @@ alias warp-on='warp-cli connect'
 alias warp-off='warp-cli disconnect'
 alias warp-st='warp-cli status'
 win-stop() {
-  if command -v killall >/dev/null 2>&1; then
-    killall xfreerdp3 2>/dev/null || true
-  fi
   if command -v docker >/dev/null 2>&1 && docker container inspect WinBoat >/dev/null 2>&1; then
     docker stop WinBoat >/dev/null || return
     echo 'Windows (WinBoat) has been successfully stopped.'

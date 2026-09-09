@@ -14,10 +14,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install desktop entry validator
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y desktop-file-utils
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y desktop-file-utils zsh
 
       - name: Check shell syntax
-        run: bash -n .zshrc scripts/*.sh
+        run: |
+          bash -n scripts/*.sh
+          zsh -n .zshrc
+
+      - name: Check script permissions
+        run: |
+          test -x scripts/audit-system.sh
+          test -x scripts/prime-java.sh
 
       - name: Validate desktop entries
         run: |

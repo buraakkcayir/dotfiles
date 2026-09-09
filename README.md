@@ -52,41 +52,58 @@ NVIDIA PRIME support. Set `JAVA_HOME` when a specific Java installation is
 required.
 
 ## ⚙️ Core Configurations
-- **Zsh:** `.zshrc` with optional Powerlevel10k, Cloudflare WARP aliases, and a Docker RDP helper.
+- **Zsh:** `.zshrc` with optional Powerlevel10k, Cloudflare WARP aliases, and a Docker WinBoat helper.
 - **KDE Plasma 6:** Global shortcuts (`kglobalshortcutsrc`), KWin window rules (`kwinrulesrc`), and custom autostart desktop entries.
 - **Konsole:** Main configuration (`konsolerc`), custom profiles, and `MaterialYou` color schemes.
 - **Ly TUI Display Manager:** Custom login screen configuration (`/etc/ly/config.ini`) featuring Nord/Tokyo Night aesthetics and sequential function keybinds.
 
 ## Installation
 
-Set the repository location once, then create only the links you need:
+Set the repository location once, then create only the links you need. The
+following helper backs up an existing non-symlink file before replacing it and
+does nothing when the desired symlink already points at this repository:
 
 ```bash
 PROJECT_DIR="${PROJECT_DIR:-$HOME/dotfiles}"
 git clone https://github.com/buraakkcayir/dotfiles.git "$PROJECT_DIR"
 
-ln -sf "$PROJECT_DIR/.zshrc" "$HOME/.zshrc"
+backup_and_link() {
+    source=$1
+    target=$2
+    if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$source")" ]; then
+        return
+    fi
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
+        mv "$target" "$backup"
+        printf 'Backed up %s to %s\n' "$target" "$backup"
+    fi
+    ln -s "$source" "$target"
+}
 
 mkdir -p "$HOME/.config" "$HOME/.local/share/konsole" "$HOME/.config/autostart"
-ln -sf "$PROJECT_DIR/kwinrulesrc" "$HOME/.config/kwinrulesrc"
-ln -sf "$PROJECT_DIR/kglobalshortcutsrc" "$HOME/.config/kglobalshortcutsrc"
-ln -sf "$PROJECT_DIR/konsolerc" "$HOME/.config/konsolerc"
+backup_and_link "$PROJECT_DIR/.zshrc" "$HOME/.zshrc"
+backup_and_link "$PROJECT_DIR/kwinrulesrc" "$HOME/.config/kwinrulesrc"
+backup_and_link "$PROJECT_DIR/kglobalshortcutsrc" "$HOME/.config/kglobalshortcutsrc"
+backup_and_link "$PROJECT_DIR/konsolerc" "$HOME/.config/konsolerc"
 
 for file in "$PROJECT_DIR"/konsole/*; do
-    ln -sf "$file" "$HOME/.local/share/konsole/"
+    backup_and_link "$file" "$HOME/.local/share/konsole/$(basename "$file")"
 done
 
 for file in "$PROJECT_DIR"/autostart/*; do
-    ln -sf "$file" "$HOME/.config/autostart/"
+    backup_and_link "$file" "$HOME/.config/autostart/$(basename "$file")"
 done
 ```
 
 The Ly configuration is optional and replaces a system file. Back it up before
-installing it:
+installing it, and keep the printed backup path for uninstall:
 
 ```bash
-sudo install -Dm644 /etc/ly/config.ini "/etc/ly/config.ini.backup.$(date +%Y%m%d%H%M%S)"
+LY_BACKUP="/etc/ly/config.ini.backup.$(date +%Y%m%d%H%M%S)"
+sudo install -Dm644 /etc/ly/config.ini "$LY_BACKUP"
 sudo ln -sfn "$PROJECT_DIR/etc/ly/config.ini" /etc/ly/config.ini
+printf 'Ly backup: %s\n' "$LY_BACKUP"
 ```
 
 Autostart entries for Dikte, Meme Picker, and the Razer helper use commands
@@ -119,14 +136,43 @@ shortcut and window-rule entries before applying them to a different desktop.
 
 ## Uninstall
 
-Remove only the symlinks created during installation. Restore the Ly backup
-before removing its symlink:
+Remove only symlinks that still point to this repository. Do not remove a
+regular file at one of these paths. Restore the Ly backup before removing its
+symlink. Set `LY_BACKUP` to the path printed during installation:
 
 ```bash
-rm -f "$HOME/.zshrc" "$HOME/.config/kwinrulesrc" \
-  "$HOME/.config/kglobalshortcutsrc" "$HOME/.config/konsolerc"
-rm -f "$HOME"/.config/autostart/{Dikte,FDM,meme-picker,razer-restore,com.github.wwmm.easyeffects}.desktop
-sudo rm -f /etc/ly/config.ini
+PROJECT_DIR="${PROJECT_DIR:-$HOME/dotfiles}"
+remove_repo_link() {
+    source=$1
+    target=$2
+    if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$source")" ]; then
+        rm "$target"
+    fi
+}
+
+remove_repo_link "$PROJECT_DIR/.zshrc" "$HOME/.zshrc"
+remove_repo_link "$PROJECT_DIR/kwinrulesrc" "$HOME/.config/kwinrulesrc"
+remove_repo_link "$PROJECT_DIR/kglobalshortcutsrc" "$HOME/.config/kglobalshortcutsrc"
+remove_repo_link "$PROJECT_DIR/konsolerc" "$HOME/.config/konsolerc"
+
+for file in "$PROJECT_DIR"/konsole/* "$PROJECT_DIR"/autostart/*; do
+    [ -e "$file" ] || continue
+    case "$file" in
+        "$PROJECT_DIR"/konsole/*) target="$HOME/.local/share/konsole/$(basename "$file")" ;;
+        *) target="$HOME/.config/autostart/$(basename "$file")" ;;
+    esac
+    remove_repo_link "$file" "$target"
+done
+
+LY_BACKUP="${LY_BACKUP:?Set LY_BACKUP to the backup path printed during installation}"
+if [ -L /etc/ly/config.ini ] && [ "$(readlink -f /etc/ly/config.ini)" = "$(readlink -f "$PROJECT_DIR/etc/ly/config.ini")" ]; then
+    sudo test -f "$LY_BACKUP" || {
+        printf 'Ly backup does not exist: %s\n' "$LY_BACKUP" >&2
+        exit 1
+    }
+    sudo rm /etc/ly/config.ini
+    sudo install -Dm644 "$LY_BACKUP" /etc/ly/config.ini
+fi
 ```
 
 ## Security notes
