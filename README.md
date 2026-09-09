@@ -1,6 +1,12 @@
-# 🐧 CachyOS / Arch Linux Dotfiles & Scripts
+# CachyOS / Arch Linux Dotfiles and Scripts
 
-A curated collection of my personal dotfiles, Zsh configurations, and custom automation scripts optimized for **KDE Plasma 6 (Wayland)** on **CachyOS**.
+This repository contains personal desktop configuration files and small helper
+scripts for KDE Plasma 6 on a Wayland session. It is an opinionated starting
+point, not a universal installation profile: several entries depend on
+optional applications, NVIDIA graphics, or local hardware.
+
+This is an independent, unofficial project and is not affiliated with,
+endorsed by, or sponsored by the respective trademark owners.
 
 ## 🖼️ Preview
 
@@ -10,48 +16,128 @@ A curated collection of my personal dotfiles, Zsh configurations, and custom aut
   <em>Ly TUI Display Manager — Custom Tokyo Night & Nord Setup</em>
 </p>
 
-## 🛠️ Included Scripts
+## Scope
+
+Included configuration covers Zsh, KDE Plasma shortcuts and window rules,
+Konsole profiles and colors, Ly, and optional desktop autostart entries.
+This repository does not install packages, manage system updates, provision
+hardware, or include the applications referenced by optional autostart files.
+
+## Requirements
+
+The complete configuration targets:
+
+- Arch Linux or a compatible distribution with `pacman`
+- KDE Plasma 6, preferably on Wayland
+- Zsh and Powerlevel10k
+- Ly, if the display-manager configuration is installed
+
+Optional features require `brightnessctl`, `systemctl`, Cloudflare WARP,
+Docker, Free Download Manager, Easy Effects, Dikte, Meme Picker, or the
+NVIDIA `prime-run` wrapper. `prime-java.sh` requires Java and `prime-run`.
+Review each optional file before enabling it on another machine.
+
+## Included scripts
 
 ### 1. `audit-system.sh`
-A powerful system-auditing tool for Arch-based distributions. It automatically scans and reports:
+A system-auditing tool for Arch-based distributions. It scans and reports:
 - Modified official package configurations (`pacman -Qii`).
 - Unowned/custom system files in `/etc` and `/usr/local`.
 - Overridden `systemd` services and masked units.
 - Custom kernel module settings, sysctl, and udev rules.
 
 ### 2. `prime-java.sh`
-A lightweight wrapper to force Java applications (like Minecraft) to run on the discrete NVIDIA GPU using `prime-run`.
+A wrapper that runs Java applications through `prime-run` on systems with
+NVIDIA PRIME support. Set `JAVA_HOME` when a specific Java installation is
+required.
 
 ## ⚙️ Core Configurations
-- **Zsh:** Optimized `.zshrc` with `powerlevel10k` and custom aliases (including Cloudflare WARP and Docker RDP wrappers).
+- **Zsh:** `.zshrc` with optional Powerlevel10k, Cloudflare WARP aliases, and a Docker RDP helper.
 - **KDE Plasma 6:** Global shortcuts (`kglobalshortcutsrc`), KWin window rules (`kwinrulesrc`), and custom autostart desktop entries.
 - **Konsole:** Main configuration (`konsolerc`), custom profiles, and `MaterialYou` color schemes.
 - **Ly TUI Display Manager:** Custom login screen configuration (`/etc/ly/config.ini`) featuring Nord/Tokyo Night aesthetics and sequential function keybinds.
 
-## 🚀 Installation
-Clone the repository and automatically symlink the files to your home directory:
+## Installation
+
+Set the repository location once, then create only the links you need:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/buraakkcayir/dotfiles.git ~/dotfiles
+PROJECT_DIR="${PROJECT_DIR:-$HOME/dotfiles}"
+git clone https://github.com/buraakkcayir/dotfiles.git "$PROJECT_DIR"
 
-# 2. Symlink Zsh config
-ln -sf ~/dotfiles/.zshrc ~/.zshrc
+ln -sf "$PROJECT_DIR/.zshrc" "$HOME/.zshrc"
 
-# 3. Symlink KDE & Konsole configs
-ln -sf ~/dotfiles/kwinrulesrc ~/.config/kwinrulesrc
-ln -sf ~/dotfiles/kglobalshortcutsrc ~/.config/kglobalshortcutsrc
-ln -sf ~/dotfiles/konsolerc ~/.config/konsolerc
+mkdir -p "$HOME/.config" "$HOME/.local/share/konsole" "$HOME/.config/autostart"
+ln -sf "$PROJECT_DIR/kwinrulesrc" "$HOME/.config/kwinrulesrc"
+ln -sf "$PROJECT_DIR/kglobalshortcutsrc" "$HOME/.config/kglobalshortcutsrc"
+ln -sf "$PROJECT_DIR/konsolerc" "$HOME/.config/konsolerc"
 
-# 4. Symlink Folders (Konsole Profiles & Autostart Apps)
-mkdir -p ~/.local/share/konsole ~/.config/autostart
-ln -sf ~/dotfiles/konsole/* ~/.local/share/konsole/
-ln -sf ~/dotfiles/autostart/* ~/.config/autostart/
+for file in "$PROJECT_DIR"/konsole/*; do
+    ln -sf "$file" "$HOME/.local/share/konsole/"
+done
 
-# 5. Symlink Ly Display Manager Config (Requires Root)
-sudo rm -f /etc/ly/config.ini
-sudo ln -s ~/dotfiles/etc/ly/config.ini /etc/ly/config.ini
+for file in "$PROJECT_DIR"/autostart/*; do
+    ln -sf "$file" "$HOME/.config/autostart/"
+done
 ```
 
-## 📜 License
-MIT License
+The Ly configuration is optional and replaces a system file. Back it up before
+installing it:
+
+```bash
+sudo install -Dm644 /etc/ly/config.ini "/etc/ly/config.ini.backup.$(date +%Y%m%d%H%M%S)"
+sudo ln -sfn "$PROJECT_DIR/etc/ly/config.ini" /etc/ly/config.ini
+```
+
+Autostart entries for Dikte, Meme Picker, and the Razer helper use commands
+that must be available in `PATH`. Install or adapt those applications before
+enabling the corresponding entries. The FDM entry assumes the `fdm` command
+is available in `/opt/freedownloadmanager`.
+
+## Configuration
+
+| File | Purpose | Main dependency |
+| --- | --- | --- |
+| `.zshrc` | Shell startup and optional aliases | Zsh |
+| `scripts/audit-system.sh` | Arch/systemd audit report | `pacman`, `systemd` |
+| `scripts/prime-java.sh` | Java through NVIDIA PRIME | Java, `prime-run` |
+| `etc/ly/config.ini` | Ly login screen | Ly, `systemctl`, `brightnessctl` |
+| `autostart/*.desktop` | Optional desktop startup entries | Application-specific |
+
+The KDE and Konsole files are exports from one Plasma installation. Review
+shortcut and window-rule entries before applying them to a different desktop.
+
+## Troubleshooting
+
+- If Zsh reports a missing CachyOS configuration, install the distribution
+  package or remove that optional integration.
+- If `prime-java.sh` cannot find Java, install a JRE/JDK or set `JAVA_HOME`.
+- If the Ly battery label is unavailable, the machine has no readable battery
+  device; the rest of the login configuration remains usable.
+- If an autostart entry fails, run its `Exec` command manually and verify that
+  the executable is in `PATH`.
+
+## Uninstall
+
+Remove only the symlinks created during installation. Restore the Ly backup
+before removing its symlink:
+
+```bash
+rm -f "$HOME/.zshrc" "$HOME/.config/kwinrulesrc" \
+  "$HOME/.config/kglobalshortcutsrc" "$HOME/.config/konsolerc"
+rm -f "$HOME"/.config/autostart/{Dikte,FDM,meme-picker,razer-restore,com.github.wwmm.easyeffects}.desktop
+sudo rm -f /etc/ly/config.ini
+```
+
+## Security notes
+
+Do not commit credentials, exported environment files, private keys, or
+machine-specific logs. `audit-system.sh` writes a local report containing
+system information; review and redact it before sharing.
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
+
+Third-party applications, names, and logos referenced by configuration files
+remain subject to their respective licenses and trademarks.

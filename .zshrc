@@ -5,7 +5,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-source /usr/share/cachyos-zsh-config/cachyos-config.zsh
+if [[ -r /usr/share/cachyos-zsh-config/cachyos-config.zsh ]]; then
+  source /usr/share/cachyos-zsh-config/cachyos-config.zsh
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -15,4 +17,15 @@ export LC_MESSAGES=C.UTF-8
 alias warp-on='warp-cli connect'
 alias warp-off='warp-cli disconnect'
 alias warp-st='warp-cli status'
-alias win-stop="killall xfreerdp3 2>/dev/null; docker stop WinBoat >/dev/null 2>&1 && echo 'Windows (WinBoat) has been successfully stopped.'"
+win-stop() {
+  if command -v killall >/dev/null 2>&1; then
+    killall xfreerdp3 2>/dev/null || true
+  fi
+  if command -v docker >/dev/null 2>&1 && docker container inspect WinBoat >/dev/null 2>&1; then
+    docker stop WinBoat >/dev/null || return
+    echo 'Windows (WinBoat) has been successfully stopped.'
+  else
+    echo 'The WinBoat container is not available.' >&2
+    return 1
+  fi
+}

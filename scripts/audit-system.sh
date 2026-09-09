@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o pipefail
 
 OUT_FILE="$HOME/System-Audit-Report.txt"
 exec > >(tee "$OUT_FILE") 2>&1
@@ -13,6 +14,17 @@ header() {
     echo -e "  $1"
     echo -e "========================================================${COLOR_RESET}"
 }
+
+require_command() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        printf 'Error: required command not found: %s\n' "$1" >&2
+        exit 127
+    fi
+}
+
+for command in pacman systemd-delta systemctl; do
+    require_command "$command"
+done
 
 header "1. MODIFIED OFFICIAL CONFIGURATION FILES (pacman -Qii)"
 echo "Files manually modified after package installation:"
@@ -35,15 +47,18 @@ ls -la /etc/udev/rules.d/ 2>/dev/null | grep -v "^total"
 header "5. ENVIRONMENT VARIABLES"
 if [ -f /etc/environment ]; then
     echo -e "${COLOR_YELLOW}[/etc/environment]:${COLOR_RESET}"
-    cat /etc/environment
+    sed -E 's/(PASSWORD|PASSWD|TOKEN|SECRET|API[_-]?KEY)[[:space:]]*=[[:space:]]*.*/\1=REDACTED/Ig' /etc/environment
 fi
 if [ -d ~/.config/environment.d ]; then
     echo -e "${COLOR_YELLOW}[~/.config/environment.d/]:${COLOR_RESET}"
-    head -n 20 ~/.config/environment.d/* 2>/dev/null
+    for file in ~/.config/environment.d/*; do
+        [ -f "$file" ] || continue
+        sed -n '1,20{s/\(PASSWORD\|PASSWD\|TOKEN\|SECRET\|API[_-]\?KEY\)[[:space:]]*=[[:space:]].*/\1=REDACTED/Ig;p;}' "$file"
+    done
 fi
 
 header "6. DISK & BTRFS CONFIGURATION (/etc/fstab)"
-grep -v "^#" /etc/fstab | grep -v "^$"
+awk '!/^[[:space:]]*#/ && NF >= 3 {print "<device> " $2 " " $3}' /etc/fstab
 
 header "7. OTHER CUSTOM APPLICATION CONFIGURATIONS"
 for app in gamemode.ini mpv/mpv.conf fastfetch easyeffects input-remapper-2 kitty alacritty; do
